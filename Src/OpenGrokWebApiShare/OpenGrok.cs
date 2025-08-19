@@ -1,52 +1,36 @@
 ﻿namespace OpenGrokWebApi;
 
-public class OpenGrok : IDisposable
-{
-    private OpenGrokService? service;
+// https://opengrok.docs.apiary.io/#reference/0/web-app-version/get-web-app-version-as-string?console=1
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenGrok"/> class using a store key and application name.
-    /// </summary>
-    /// <param name="storeKey">The key to retrieve the host and token from the key store.</param>
-    /// <param name="appName">The name of the application using the API.</param>
-    public OpenGrok(string storeKey, string appName)
-    : this(new Uri(KeyStore.Key(storeKey)?.Host!), KeyStore.Key(storeKey)!.Login!, KeyStore.Key(storeKey)!.Password!, appName)
+public class OpenGrok : JsonService
+{
+    public OpenGrok(string storeKey, string appName) : base(storeKey, appName, SourceGenerationContext.Default)
     { }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SnipeIT"/> class using a host URI, token, and application name.
-    /// </summary>
-    /// <param name="host">The base URI of the Snipe-IT API.</param>
-    /// <param name="token">The authentication token for the API.</param>
-    /// <param name="appName">The name of the application using the API.</param>
-    public OpenGrok(Uri host, string token, string appName)
-    {
-        service = new(host, new BearerAuthenticator(token), appName);
-    }
+    public OpenGrok(Uri host, IAuthenticator? authenticator, string appName) : base(host, authenticator, appName, SourceGenerationContext.Default)
+    { }
 
-    public OpenGrok(Uri host, string login, string password, string appName)
-    {
-        service = new(host, new BasicAuthenticator("Authorization", login, password), appName);
-    }
+    //protected override string? AuthenticationTestUrl => "system/ping";
 
-    /// <summary>
-    /// Disposes the resources used by the <see cref="SnipeIT"/> instance.
-    /// </summary>
-    public void Dispose()
+
+    public override async Task<string?> GetVersionStringAsync(CancellationToken cancellationToken = default)
     {
-        if (this.service != null)
+        WebServiceException.ThrowIfNotConnected(client);
+
+        //var res0 = await GetStringAsync("system", cancellationToken);
+        try
         {
-            this.service.Dispose();
-            this.service = null;
+            var res = await GetStringAsync("api/v1/system/ping", cancellationToken);
         }
-        GC.SuppressFinalize(this);
-    }
+        catch (Exception) { }
 
-    public async Task<Version?> GetVersionAsync(CancellationToken cancellationToken = default)
-    {
-        WebServiceException.ThrowIfNullOrNotConnected(this.service);
+        try
+        {
+            var res = await GetStringAsync("api/v1/system/version", cancellationToken);
+        }
+        catch (Exception) { }
 
-        var res = await service.GetVersionAsync(cancellationToken);
-        return res;
+       
+        return "0.0.0";
     }
 }

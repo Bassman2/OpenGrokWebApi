@@ -1,4 +1,4 @@
-﻿namespace OpenGrokWebApi.Service.Model;
+﻿namespace OpenGrokWebApi.Model;
 
 internal class HealthModel
 {

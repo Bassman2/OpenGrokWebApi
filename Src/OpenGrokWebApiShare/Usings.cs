@@ -6,5 +6,4 @@ global using System.Text;
 global using WebServiceClient;
 global using WebServiceClient.Store;
 
-global using OpenGrokWebApi.Service;
-global using OpenGrokWebApi.Service.Model;
+global using OpenGrokWebApi.Model;
