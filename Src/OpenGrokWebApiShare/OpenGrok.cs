@@ -1,52 +1,39 @@
-﻿namespace OpenGrokWebApi;
+﻿using System.Text.RegularExpressions;
 
-public class OpenGrok : IDisposable
+namespace OpenGrokWebApi;
+
+// https://opengrok.docs.apiary.io/#reference/0/web-app-version/get-web-app-version-as-string?console=1
+
+public partial class OpenGrok : JsonService
 {
-    private OpenGrokService? service;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenGrok"/> class using a store key and application name.
-    /// </summary>
-    /// <param name="storeKey">The key to retrieve the host and token from the key store.</param>
-    /// <param name="appName">The name of the application using the API.</param>
-    public OpenGrok(string storeKey, string appName)
-    : this(new Uri(KeyStore.Key(storeKey)?.Host!), KeyStore.Key(storeKey)!.Login!, KeyStore.Key(storeKey)!.Password!, appName)
+    public OpenGrok(string storeKey, string appName) : base(storeKey, appName, SourceGenerationContext.Default)
     { }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SnipeIT"/> class using a host URI, token, and application name.
-    /// </summary>
-    /// <param name="host">The base URI of the Snipe-IT API.</param>
-    /// <param name="token">The authentication token for the API.</param>
-    /// <param name="appName">The name of the application using the API.</param>
-    public OpenGrok(Uri host, string token, string appName)
+    public OpenGrok(Uri host, IAuthenticator? authenticator, string appName) : base(host, authenticator, appName, SourceGenerationContext.Default)
+    { }
+
+    //protected override string? AuthenticationTestUrl => "system/ping";
+
+
+    // https://shm-opengrok.elektrobit.com/source/api/v1/suggest/config
+
+    // curl -H "Authorization: Basic YnM6VmlzdWFsRW50ZTYuMVNwMg==" https://shm-opengrok.elektrobit.com/source/
+
+
+    public override async Task<string?> GetVersionStringAsync(CancellationToken cancellationToken = default)
     {
-        service = new(host, new BearerAuthenticator(token), appName);
+        WebServiceException.ThrowIfNotConnected(client);
+
+        var html = await GetStringAsync("", cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(html)) return null;
+
+        
+        var match = VersionRegex().Match(html);
+        string s = match.Success ? match.Groups[1].Value : "0.0.0";
+        return s;
     }
 
-    public OpenGrok(Uri host, string login, string password, string appName)
-    {
-        service = new(host, new BasicAuthenticator("Authorization", login, password), appName);
-    }
-
-    /// <summary>
-    /// Disposes the resources used by the <see cref="SnipeIT"/> instance.
-    /// </summary>
-    public void Dispose()
-    {
-        if (this.service != null)
-        {
-            this.service.Dispose();
-            this.service = null;
-        }
-        GC.SuppressFinalize(this);
-    }
-
-    public async Task<Version?> GetVersionAsync(CancellationToken cancellationToken = default)
-    {
-        WebServiceException.ThrowIfNullOrNotConnected(this.service);
-
-        var res = await service.GetVersionAsync(cancellationToken);
-        return res;
-    }
+    [GeneratedRegex(@"<meta\s+name=[""']generator[""'][^>]*content=[""']\{?OpenGrok\s+([0-9.]+)", RegexOptions.IgnoreCase, "de-DE")]
+    private static partial Regex VersionRegex();
 }
