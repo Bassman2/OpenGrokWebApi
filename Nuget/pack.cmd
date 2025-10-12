@@ -1,0 +1,1 @@
+nuget pack OpenGrokWebApi.nuspec -properties Configuration=Release
