@@ -1,10 +1,12 @@
 <Solution>
   <Folder Name="/Src/">
+    <Project Path="Src/OpenGrokWebApi100/OpenGrokWebApi100.csproj" />
     <Project Path="Src/OpenGrokWebApi80/OpenGrokWebApi80.csproj" />
     <Project Path="Src/OpenGrokWebApi90/OpenGrokWebApi90.csproj" />
     <Project Path="Src/OpenGrokWebApiShare/OpenGrokWebApiShare.shproj" />
   </Folder>
   <Folder Name="/Test/">
+    <Project Path="Test/OpenGrokWebApiUnitTest100/OpenGrokWebApiUnitTest100.csproj" />
     <Project Path="Test/OpenGrokWebApiUnitTest80/OpenGrokWebApiUnitTest80.csproj" Id="a8bbbcca-a7fc-4dcc-97b7-ba5482e02e39" />
     <Project Path="Test/OpenGrokWebApiUnitTest90/OpenGrokWebApiUnitTest90.csproj" Id="711010d3-406e-4988-b9e4-4e7ec46102b9" />
     <Project Path="Test/OpenGrokWebApiUnitTestShare/OpenGrokWebApiUnitTestShare.shproj" Id="c5d48cba-042d-4dca-a136-a99f0172f69d" />
